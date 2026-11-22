@@ -1,7 +1,7 @@
 // The Gilded Hour — one thief, two jobs, one alarm between you and the van.
 // Loop and rules: who sees the thief, how fast the alarm climbs, when the
 // night is won and when it ends in handcuffs.
-import { SIGHT, ALARM, TOOLS, GHOST_BONUS } from './config.js';
+import { SIGHT, ALARM, TOOLS, GHOST_BONUS, LASER } from './config.js';
 import { JOBS } from './levels.js';
 import { World } from './world.js';
 import { Guard } from './guards.js';
@@ -38,6 +38,9 @@ const state = {
   message: '',
   messageT: 0,
   noiseT: 0,
+  heartT: 0,
+  shake: 0,
+  laserHit: false,
   totalScore: 0,
   lastTake: 0,
   lastGhost: false,
@@ -71,6 +74,7 @@ function tripAlarm() {
   state.tripped = true;
   state.meter = 100;
   state.countdown = ALARM.getawaySeconds;
+  state.shake = 0.4;
   sound.alarmStart();
   say('The alarm trips! Get to the van!', 3);
 }
@@ -143,14 +147,26 @@ function update(dt) {
     if (seen > 0) cameraExposure = Math.max(cameraExposure, seen);
   }
 
+  // A live laser the thief is standing in sings straight into the meter.
+  state.laserHit = !!world.laserBrokenBy(thief.x, thief.y, state.time);
+
   // The meter: guards fill it by closeness, cameras steadily, quiet sheds it.
   if (!state.tripped) {
     let fill = 0;
     if (exposure > 0) fill += SIGHT.fillFar + (SIGHT.fillNear - SIGHT.fillFar) * exposure;
     if (cameraExposure > 0) fill += SIGHT.cameraFill * cameraExposure;
+    if (state.laserHit) fill += LASER.fill;
     if (fill > 0) state.meter += fill * dt;
     else state.meter = Math.max(0, state.meter - SIGHT.decay * dt);
     if (state.meter >= ALARM.tripAt) tripAlarm();
+    // A heartbeat under the floorboards once the meter runs hot.
+    if (state.meter > 55) {
+      state.heartT -= dt;
+      if (state.heartT <= 0) {
+        sound.thump();
+        state.heartT = state.meter > 82 ? 0.55 : 0.85;
+      }
+    }
   } else {
     state.countdown -= dt;
     if (state.countdown <= 0) return bust('The net closed in before you reached the van.');
@@ -191,17 +207,23 @@ function buildCones() {
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (state.shake > 0) {
+    const s = state.shake * 9;
+    ctx.save();
+    ctx.translate(Math.sin(state.time * 71) * s, Math.cos(state.time * 59) * s * 0.7);
+  }
   if (!state.world) {
     drawCard(ctx, {
       title: 'THE GILDED HOUR',
       lines: [
         'Two buildings. One bag. A single alarm between you and the van.',
         '',
-        'Slip past the guards and the cameras, pick the vault, take the quota —',
-        'and if the alarm trips, you have 45 seconds to be gone.',
+        'Slip past the guards and the cameras, time the vault laser, pick the lock,',
+        'take the quota — and if the alarm trips, you have 45 seconds to be gone.',
       ],
       foot: 'Click or press Enter to plan the first job',
     });
+    if (state.shake > 0) ctx.restore();
     return;
   }
   drawWorld(ctx, state);
@@ -216,6 +238,7 @@ function render() {
         job.sub,
         `Quota: $${job.quota.toLocaleString()} of $${state.world.totalLoot.toLocaleString()} on the floor.`,
         'Guards fill the alarm when they see you; cameras feed it steadily.',
+        'A laser guards the vault gold — cross it in its blink, or not at all.',
         'Coins lure, EMP blinds cameras, F picks the vault — all in short supply.',
       ],
       foot: 'Click or press Enter to go in',
@@ -246,6 +269,7 @@ function render() {
       foot: 'Click or press Enter to run the night again',
     });
   }
+  if (state.shake > 0) ctx.restore();
 }
 
 function advance() {
@@ -284,6 +308,7 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
+  if (state.shake > 0) state.shake = Math.max(0, state.shake - dt);
   if (!state.frozen) update(dt);
   else buildCones();
   render();
