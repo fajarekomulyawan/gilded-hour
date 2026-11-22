@@ -38,6 +38,7 @@ export class Sound {
   tick() { this.tone(1900 + Math.random() * 500, 0.02, 'square', 0.02); }
   unlock() { this.tone(340, 0.09, 'square', 0.06); this.tone(520, 0.14, 'square', 0.06, null, 0.09); }
   emp() { this.tone(1200, 0.3, 'sawtooth', 0.05, 90); }
+  thump() { this.tone(58, 0.14, 'sine', 0.16, 40); this.tone(52, 0.1, 'sine', 0.1, 38, 0.13); }
 
   alarmStart() {
     const ctx = this.ensure();
