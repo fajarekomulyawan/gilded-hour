@@ -44,6 +44,10 @@ export const JOBS = [
       { tx: 30, ty: 9, base: Math.PI - 0.5, sweep: 0.75, speed: 0.45, phase: 2.4 },
       { tx: 21, ty: 6, base: Math.PI * 0.82, sweep: 0.6, speed: 0.35, phase: 1.1 },
     ],
+    // A laser across the vault's waist: the gold above it is timed, not free.
+    lasers: [
+      { from: [11, 3], to: [20, 3], phase: 0 },
+    ],
   },
   {
     name: 'Job Two — The Aurelia Gallery',
@@ -83,6 +87,10 @@ export const JOBS = [
       { tx: 1, ty: 5, base: 0.45, sweep: 0.8, speed: 0.5, phase: 0.6 },
       { tx: 30, ty: 5, base: Math.PI - 0.45, sweep: 0.8, speed: 0.5, phase: 3.4 },
       { tx: 16, ty: 16, base: -Math.PI / 2, sweep: 0.9, speed: 0.4, phase: 1.8 },
+    ],
+    // The strongroom's laser, blinking out of step with the bank's.
+    lasers: [
+      { from: [12, 3], to: [19, 3], phase: 1.3 },
     ],
   },
 ];
