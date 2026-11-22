@@ -2,6 +2,7 @@
 // the HUD with its alarm meter. Flat shapes, strong silhouettes: cover is
 // furniture-height and warm, danger is a cone, loot glitters.
 import { TILE, VIEW_W, VIEW_H } from './config.js';
+import { laserState } from './world.js';
 
 const THEMES = {
   bank: {
@@ -93,9 +94,52 @@ export function drawWorld(ctx, state) {
       }
     }
   }
+  // Soft shadows where walls and furniture meet the floor: rooms read as
+  // places, not tiles.
+  ctx.fillStyle = 'rgba(20,14,6,0.20)';
+  for (let ty = 0; ty < world.rows - 1; ty++) {
+    for (let tx = 0; tx < world.cols; tx++) {
+      if (world.blockedTile(tx, ty) && !world.blockedTile(tx, ty + 1)) {
+        ctx.fillRect(tx * TILE, (ty + 1) * TILE, TILE, 8);
+      }
+    }
+  }
   drawVan(ctx, world);
   for (const door of world.doors) drawVaultDoor(ctx, door);
   for (const piece of world.loot) if (!piece.taken) drawLoot(ctx, piece, state.time);
+  drawLasers(ctx, state);
+}
+
+// The vault lasers: a live beam burns red with a halo; a resting one is a
+// whisper of dotted light and a green eye — the gap you time your step to.
+function drawLasers(ctx, state) {
+  for (const laser of state.world.lasers) {
+    const { on, untilSwitch } = laserState(laser, state.time);
+    for (const [ex, ey] of [[laser.x1, laser.y1], [laser.x2, laser.y2]]) {
+      ctx.fillStyle = '#22262e';
+      ctx.fillRect(ex - 7, ey - 7, 14, 14);
+      ctx.fillStyle = on ? '#ff5347' : '#7eff9a';
+      ctx.beginPath(); ctx.arc(ex, ey, 3.2, 0, 7); ctx.fill();
+    }
+    if (on) {
+      ctx.strokeStyle = 'rgba(255,60,50,0.28)';
+      ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(laser.x1, laser.y1); ctx.lineTo(laser.x2, laser.y2); ctx.stroke();
+      ctx.strokeStyle = state.laserHit ? '#ffffff' : '#ff4038';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(laser.x1, laser.y1); ctx.lineTo(laser.x2, laser.y2); ctx.stroke();
+    } else {
+      ctx.strokeStyle = 'rgba(255,120,110,0.4)';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([3, 7]);
+      ctx.beginPath(); ctx.moveTo(laser.x1, laser.y1); ctx.lineTo(laser.x2, laser.y2); ctx.stroke();
+      ctx.setLineDash([]);
+      if (untilSwitch < 1.2) { // about to wake: blink the eyes
+        ctx.fillStyle = Math.sin(state.time * 18) > 0 ? '#ffb340' : '#7eff9a';
+        ctx.beginPath(); ctx.arc(laser.x1, laser.y1, 3.2, 0, 7); ctx.fill();
+      }
+    }
+  }
 }
 
 function drawVan(ctx, world) {
