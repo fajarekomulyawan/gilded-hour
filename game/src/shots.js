@@ -2,10 +2,10 @@
 // deterministic moment from the real systems (positions, cones, meter),
 // freezes time, and the maker's script photographs the canvas.
 const SCENES = {
-  // The cover: the thief crosses the Meridian lobby mid-patrol — two guard
+  // The lobby: the thief crosses the Meridian lobby mid-patrol — two guard
   // cones, a camera sweep, loot in the vault behind its picked door, and
-  // the alarm meter already warm. Everything the game is, in one frame.
-  1(gh) {
+  // the alarm meter already warm.
+  2(gh) {
     gh.startJob(0);
     gh.pose((s) => {
       s.time = 1.0; // the vault laser is live in its blink cycle
@@ -28,8 +28,10 @@ const SCENES = {
     });
     gh.play();
   },
-  // Inside the vault: gold in reach, the door guard's cone sweeping past.
-  2(gh) {
+  // The cover: inside the vault itself — gold in the thief's hand, two
+  // lasers burning across the room, the door guard's cone sweeping in and
+  // the meter nearly blown. The whole heist fantasy in one frame.
+  1(gh) {
     gh.startJob(0);
     gh.pose((s) => {
       s.time = 1.0;
