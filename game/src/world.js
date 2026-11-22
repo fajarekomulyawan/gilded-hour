@@ -1,5 +1,20 @@
 // The Gilded Hour — the world: one job's floor as tiles, loot and doors.
-import { TILE, LOOT_VALUES } from './config.js';
+import { TILE, LOOT_VALUES, LASER } from './config.js';
+
+// Where a laser stands in its blink cycle: live, or in the gap.
+export function laserState(laser, time) {
+  const t = (time + laser.phase) % LASER.period;
+  return { on: t < LASER.onTime, untilSwitch: (t < LASER.onTime ? LASER.onTime : LASER.period) - t };
+}
+
+// Distance from a point to a segment, for beam-breaking tests.
+export function pointSegmentDistance(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy || 1;
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+  return Math.hypot(px - (x1 + dx * t), py - (y1 + dy * t));
+}
 
 const SOLID = new Set(['#', '=', 'D', 'P', 'S']);
 const LOOT_KIND = { G: 'gold', J: 'jewel', A: 'art', C: 'cash' };
@@ -34,6 +49,21 @@ export class World {
       }
     }
     this.totalLoot = this.loot.reduce((s, l) => s + l.value, 0);
+    // Laser beams, in pixels, emitter centre to emitter centre.
+    this.lasers = (job.lasers ?? []).map((l) => ({
+      x1: l.from[0] * TILE + TILE / 2, y1: l.from[1] * TILE + TILE / 2,
+      x2: l.to[0] * TILE + TILE / 2, y2: l.to[1] * TILE + TILE / 2,
+      phase: l.phase ?? 0,
+    }));
+  }
+
+  // The live laser the thief is breaking right now, if any.
+  laserBrokenBy(x, y, time) {
+    for (const laser of this.lasers) {
+      if (!laserState(laser, time).on) continue;
+      if (pointSegmentDistance(x, y, laser.x1, laser.y1, laser.x2, laser.y2) < 9) return laser;
+    }
+    return null;
   }
 
   charAt(tx, ty) {
