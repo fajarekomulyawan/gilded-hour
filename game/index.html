@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gilded Hour — a heist game</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0b0d12; }
+  body {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    font-family: system-ui, sans-serif; color: #9fb4c8;
+  }
+  canvas {
+    width: min(1280px, 100vw); height: auto; display: block;
+    background: #101319; box-shadow: 0 8px 44px rgba(0, 0, 0, 0.6);
+  }
+  p { margin: 0; font-size: 12.5px; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<canvas id="game" width="1280" height="800"></canvas>
+<p>THE GILDED HOUR — fill the bag past the quota, mind the alarm, be in the van before it ends.</p>
+<script type="module" src="src/main.js"></script>
+<script type="module" src="src/shots.js"></script>
+</body>
+</html>
