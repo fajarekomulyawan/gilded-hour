@@ -177,14 +177,14 @@ function buildCones() {
   state.cones = [];
   for (const g of state.guards) {
     const color = g.mode === 'chase'
-      ? 'rgba(255,70,55,0.30)'
+      ? 'rgba(255,70,55,0.40)'
       : g.mode === 'patrol'
-        ? 'rgba(255,205,90,0.20)'
-        : 'rgba(255,150,60,0.26)';
+        ? 'rgba(255,205,90,0.31)'
+        : 'rgba(255,150,60,0.36)';
     state.cones.push({ pts: visionPolygon(state.world, g.x, g.y, g.angle, SIGHT.guardHalfAngle, SIGHT.guardRange), color });
   }
   for (const cam of state.cameras) {
-    const color = cam.disabledLeft > 0 ? 'rgba(120,140,160,0.10)' : 'rgba(90,200,255,0.16)';
+    const color = cam.disabledLeft > 0 ? 'rgba(120,140,160,0.12)' : 'rgba(90,200,255,0.24)';
     state.cones.push({ pts: visionPolygon(state.world, cam.x, cam.y, cam.angle, SIGHT.cameraHalfAngle, SIGHT.cameraRange), color });
   }
 }
