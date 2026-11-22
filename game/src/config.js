@@ -31,6 +31,12 @@ export const ALARM = {
   getawaySeconds: 45, // the countdown to reach the van once it trips
 };
 
+export const LASER = {
+  fill: 52, // alarm points per second while the thief breaks a live beam
+  period: 4.4, // seconds per blink cycle
+  onTime: 2.9, // of which the beam is live; the rest is the gap to slip through
+};
+
 export const TOOLS = {
   coins: 3, // decoy coins per job: Space or click throws one, guards go look
   coinRange: 260, // px a coin can be thrown
