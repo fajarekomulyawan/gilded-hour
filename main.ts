@@ -12,7 +12,7 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
@@ -39,3 +39,30 @@ writeFileSync(
     game_path_max_bytes: 1000,
   }),
 );
+
+// The Gilded Hour's own receipt: after the hand-in, walk what was actually
+// written and say what is going to the judge. A hand-in that does not match
+// the game on disk should fail loudly here, not quietly at the gate.
+function verifyHandIn(root) {
+  let gameFiles = 0;
+  let gameBytes = 0;
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      const st = statSync(path);
+      if (st.isDirectory()) walk(path);
+      else { gameFiles += 1; gameBytes += st.size; }
+    }
+  };
+  walk(join(root, 'game'));
+  const shots = readdirSync(join(root, 'screenshots')).filter((n) => !n.startsWith('.'));
+  const dossierBytes = statSync(join(root, 'dossier.json')).size;
+  console.log(
+    `gilded-hour: handed in ${gameFiles} game files (${gameBytes} bytes), ` +
+    `${shots.length} screenshots, dossier ${dossierBytes} bytes`,
+  );
+  if (shots.length < 3 || shots.length > 4) throw new Error('screenshots must number 3 or 4');
+  if (dossierBytes > 1572864) throw new Error('dossier exceeds 1.5 MiB');
+}
+
+verifyHandIn(out);
