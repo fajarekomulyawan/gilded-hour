@@ -5,8 +5,8 @@ import { TILE, VIEW_W, VIEW_H } from './config.js';
 
 const THEMES = {
   bank: {
-    wall: '#2c3550', wallTop: '#46538a', floor: '#d9c9a3', floorAlt: '#cfbc92',
-    carpet: '#8e2434', carpetEdge: '#6d1a28', trim: '#c9a227',
+    wall: '#2c3550', wallTop: '#46538a', floor: '#d3bd8d', floorAlt: '#c6ab74',
+    carpet: '#7e1d2c', carpetEdge: '#5f1521', trim: '#c9a227',
   },
   gallery: {
     wall: '#4a2436', wallTop: '#6e3a52', floor: '#b98d5f', floorAlt: '#ad8355',
@@ -158,6 +158,12 @@ function drawVaultDoor(ctx, door) {
 function drawLoot(ctx, piece, time) {
   const bob = Math.sin(time * 2.4 + piece.x * 0.05) * 1.5;
   const { x, y } = piece;
+  // A halo of lamplight so a prize reads from across the room at a glance.
+  const glow = ctx.createRadialGradient(x, y, 2, x, y, 24);
+  glow.addColorStop(0, 'rgba(255,224,130,0.40)');
+  glow.addColorStop(1, 'rgba(255,224,130,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - 24, y - 24, 48, 48);
   ctx.save();
   ctx.translate(x, y + bob);
   if (piece.kind === 'gold') {
@@ -227,9 +233,12 @@ export function drawActors(ctx, state) {
     ctx.save();
     ctx.translate(g.x, g.y);
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath(); ctx.ellipse(0, 5, 11, 5, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 5, 12, 5.5, 0, 0, 7); ctx.fill();
     ctx.fillStyle = g.mode === 'chase' ? '#a12633' : '#31456e';
-    ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 13.5, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(232,200,90,0.8)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(0, 0, 13.5, 0, 7); ctx.stroke();
     ctx.rotate(g.angle);
     ctx.fillStyle = '#e8d9b0';
     ctx.fillRect(4, -4, 9, 8); // lamp hand
@@ -258,7 +267,10 @@ export function drawActors(ctx, state) {
     ctx.fill();
   }
   ctx.fillStyle = t.sneaking ? '#15181d' : '#1f232b';
-  ctx.beginPath(); ctx.arc(0, 0, t.sneaking ? 11 : 12.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, t.sneaking ? 12 : 14, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(232,226,210,0.55)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(0, 0, t.sneaking ? 12 : 14, 0, 7); ctx.stroke();
   ctx.rotate(t.angle);
   ctx.fillStyle = '#e8e2d2';
   ctx.fillRect(6, -5, 5, 3); // the mask's eye slit
@@ -345,6 +357,12 @@ export function drawHUD(ctx, state) {
     ctx.lineWidth = 16;
     ctx.strokeRect(0, 0, VIEW_W, VIEW_H);
   }
+  // Lamplight vignette: the room's edges fall off into night.
+  const vg = ctx.createRadialGradient(VIEW_W / 2, VIEW_H / 2, VIEW_H * 0.42, VIEW_W / 2, VIEW_H / 2, VIEW_H * 0.86);
+  vg.addColorStop(0, 'rgba(4,6,10,0)');
+  vg.addColorStop(1, 'rgba(4,6,10,0.34)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 }
 
 export function drawCard(ctx, { title, lines, foot }) {
