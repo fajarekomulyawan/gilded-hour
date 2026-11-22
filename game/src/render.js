@@ -13,6 +13,10 @@ const THEMES = {
     wall: '#4a2436', wallTop: '#6e3a52', floor: '#b98d5f', floorAlt: '#ad8355',
     carpet: '#5d2a4a', carpetEdge: '#46203a', trim: '#d8b45a',
   },
+  casino: {
+    wall: '#33244a', wallTop: '#54407a', floor: '#1f4d3a', floorAlt: '#1b4433',
+    carpet: '#8e2434', carpetEdge: '#6d1a28', trim: '#d8b45a',
+  },
 };
 
 function poly(ctx, pts) {
@@ -107,12 +111,44 @@ export function drawWorld(ctx, state) {
   drawVan(ctx, world);
   for (const door of world.doors) drawVaultDoor(ctx, door);
   for (const piece of world.loot) if (!piece.taken) drawLoot(ctx, piece, state.time);
-  drawLasers(ctx, state);
+}
+
+// Night itself, laid over the room: a deep dim that the vision cones and
+// the thief's own small pool of lamplight push back. What a watcher can
+// see is lit; the rest of the building sleeps — cover you can read.
+let lightCanvas = null;
+export function drawDarkness(ctx, state) {
+  if (!lightCanvas) {
+    lightCanvas = document.createElement('canvas');
+    lightCanvas.width = VIEW_W;
+    lightCanvas.height = VIEW_H;
+  }
+  const lctx = lightCanvas.getContext('2d');
+  lctx.clearRect(0, 0, VIEW_W, VIEW_H);
+  lctx.globalCompositeOperation = 'source-over';
+  lctx.fillStyle = 'rgba(7,9,24,0.36)';
+  lctx.fillRect(0, 0, VIEW_W, VIEW_H);
+  lctx.globalCompositeOperation = 'destination-out';
+  for (const cone of state.cones) {
+    poly(lctx, cone.pts);
+    lctx.fillStyle = 'rgba(0,0,0,0.82)';
+    lctx.fill();
+  }
+  const pool = (x, y, r, a) => {
+    const g = lctx.createRadialGradient(x, y, 2, x, y, r);
+    g.addColorStop(0, `rgba(0,0,0,${a})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    lctx.fillStyle = g;
+    lctx.fillRect(x - r, y - r, r * 2, r * 2);
+  };
+  pool(state.thief.x, state.thief.y, 52, 0.5);
+  for (const piece of state.world.loot) if (!piece.taken) pool(piece.x, piece.y, 30, 0.38);
+  ctx.drawImage(lightCanvas, 0, 0);
 }
 
 // The vault lasers: a live beam burns red with a halo; a resting one is a
 // whisper of dotted light and a green eye — the gap you time your step to.
-function drawLasers(ctx, state) {
+export function drawLasers(ctx, state) {
   for (const laser of state.world.lasers) {
     const { on, untilSwitch } = laserState(laser, state.time);
     for (const [ex, ey] of [[laser.x1, laser.y1], [laser.x2, laser.y2]]) {
