@@ -8,6 +8,7 @@ const SCENES = {
   1(gh) {
     gh.startJob(0);
     gh.pose((s) => {
+      s.time = 1.0; // the vault laser is live in its blink cycle
       s.world.doors[0].open = true;
       s.thief.x = 15.5 * 40; s.thief.y = 13.5 * 40; s.thief.angle = 0.4;
       s.thief.carried = 2750; s.thief.items = 3;
@@ -31,9 +32,13 @@ const SCENES = {
   2(gh) {
     gh.startJob(0);
     gh.pose((s) => {
+      s.time = 1.0;
       s.world.doors[0].open = true;
-      s.thief.x = 15 * 40; s.thief.y = 3.4 * 40; s.thief.angle = 0.2;
+      s.thief.x = 15 * 40; s.thief.y = 2.55 * 40; s.thief.angle = 0.2;
       s.thief.carried = 6750; s.thief.items = 5;
+      // The grab itself, caught mid-float: gold in hand, the live laser
+      // burning across the vault's waist just below the thief's feet.
+      s.floaters.push({ x: 14 * 40, y: 2.1 * 40, text: '+$2,000', t: 0.3 });
       const [, , vault] = s.guards;
       vault.x = 16 * 40; vault.y = 7 * 40; vault.angle = -Math.PI / 2; vault.mode = 'investigate';
       vault.alert = 0.8;
@@ -62,22 +67,27 @@ const SCENES = {
     });
     gh.play();
   },
-  // Job two: the Aurelia Gallery — cases of jewels, four guards, more eyes.
+  // Job two: the Aurelia Gallery — and the strongroom lock, picked in the
+  // open while the door guard's cone sweeps the corridor.
   4(gh) {
     gh.startJob(1);
     gh.pose((s) => {
-      s.thief.x = 10.5 * 40; s.thief.y = 11.5 * 40; s.thief.angle = -0.5;
-      s.thief.carried = 4500; s.thief.items = 3;
+      s.time = 0.6; // the strongroom laser is live
+      s.world.doors[0].picking = 0.65;
+      s.thief.x = 16.5 * 40; s.thief.y = 6.5 * 40; s.thief.angle = -Math.PI / 2;
+      s.thief.carried = 9000; s.thief.items = 5;
       const [a, b, c, d] = s.guards;
       a.x = 17 * 40; a.y = 9 * 40; a.angle = Math.PI * 0.8; a.mode = 'patrol';
       b.x = 24 * 40; b.y = 6 * 40; b.angle = Math.PI; b.mode = 'patrol';
-      c.x = 15 * 40; c.y = 6 * 40; c.angle = Math.PI / 2; c.mode = 'patrol';
+      c.x = 12.5 * 40; c.y = 6.5 * 40; c.angle = 0.35; c.mode = 'patrol';
       d.x = 8 * 40; d.y = 15 * 40; d.angle = 0.3; d.mode = 'patrol';
       s.cameras[0].angle = 0.8;
       s.cameras[1].angle = Math.PI - 0.8;
       s.cameras[2].angle = -Math.PI / 2 + 0.5;
-      s.meter = 32;
+      s.meter = 41;
       s.empsLeft = 1;
+      s.message = 'Picking the vault lock… 65%';
+      s.messageT = 999;
     });
     gh.play();
   },
