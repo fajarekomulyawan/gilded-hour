@@ -11,7 +11,7 @@ import { Input } from './input.js';
 import { Sound } from './audio.js';
 import { throwCoin, fireEMP, workLock } from './tools.js';
 import { visionPolygon } from './vision.js';
-import { drawWorld, drawCones, drawActors, drawHUD, drawCard } from './render.js';
+import { drawWorld, drawDarkness, drawLasers, drawCones, drawActors, drawHUD, drawCard } from './render.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -216,7 +216,7 @@ function render() {
     drawCard(ctx, {
       title: 'THE GILDED HOUR',
       lines: [
-        'Two buildings. One bag. A single alarm between you and the van.',
+        'Three buildings. One bag. A single alarm between you and the van.',
         '',
         'Slip past the guards and the cameras, time the vault laser, pick the lock,',
         'take the quota — and if the alarm trips, you have 45 seconds to be gone.',
@@ -227,6 +227,8 @@ function render() {
     return;
   }
   drawWorld(ctx, state);
+  drawDarkness(ctx, state);
+  drawLasers(ctx, state);
   drawCones(ctx, state);
   drawActors(ctx, state);
   drawHUD(ctx, state);
@@ -260,12 +262,12 @@ function render() {
       foot: state.jobIndex + 1 < JOBS.length ? 'Click or press Enter for the next job' : 'Click or press Enter for the final reckoning',
     });
   } else if (state.screen === 'final') {
-    const rank = state.totalScore >= 38000 ? 'LEGEND OF THE GILDED HOUR'
-      : state.totalScore >= 30000 ? 'MASTER THIEF'
-        : state.totalScore >= 22000 ? 'PROFESSIONAL' : 'CAT BURGLAR';
+    const rank = state.totalScore >= 56000 ? 'LEGEND OF THE GILDED HOUR'
+      : state.totalScore >= 44000 ? 'MASTER THIEF'
+        : state.totalScore >= 30000 ? 'PROFESSIONAL' : 'CAT BURGLAR';
     drawCard(ctx, {
       title: 'THE NIGHT IS YOURS',
-      lines: [`Total take across both jobs: $${state.totalScore.toLocaleString()}.`, `The underworld calls you: ${rank}.`],
+      lines: [`Total take across all ${JOBS.length} jobs: $${state.totalScore.toLocaleString()}.`, `The underworld calls you: ${rank}.`],
       foot: 'Click or press Enter to run the night again',
     });
   }
