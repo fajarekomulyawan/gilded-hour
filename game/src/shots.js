@@ -11,8 +11,12 @@ const SCENES = {
       s.world.doors[0].open = true;
       s.thief.x = 15.5 * 40; s.thief.y = 13.5 * 40; s.thief.angle = 0.4;
       s.thief.carried = 2750; s.thief.items = 3;
+      // A thrown coin glints by the carpet: the lobby guard has left his
+      // round to look at it — the lure tool, caught in the act.
+      s.coin = { x: 20.5 * 40, y: 13 * 40, ring: 0.45 };
+      s.coinsLeft = 2;
       const [lobby, hall, vault] = s.guards;
-      lobby.x = 11 * 40; lobby.y = 12 * 40; lobby.angle = 0.9; lobby.mode = 'patrol';
+      lobby.x = 17.5 * 40; lobby.y = 12.2 * 40; lobby.angle = 0.5; lobby.mode = 'investigate'; lobby.alert = 0.5;
       hall.x = 21 * 40; hall.y = 8 * 40; hall.angle = Math.PI; hall.mode = 'patrol';
       vault.x = 16 * 40; vault.y = 7 * 40; vault.angle = Math.PI / 2; vault.mode = 'patrol';
       s.cameras[0].angle = 0.9;
